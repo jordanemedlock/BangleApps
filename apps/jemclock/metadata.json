@@ -1,14 +1,14 @@
 {
   "id": "jemclock",
   "name": "JEM Clock",
-  "version": "0.02",
+  "version": "0.03",
   "description": "My custom clock.  Just the tutorial at the moment.",
   "icon": "clock-jem.png",
   "type": "clock",
   "tags": "clock",
   "supports": ["BANGLEJS"],
   "allow_emulator": true,
-  "screenshots": [{"url":"bangle1-morphing-clock-screenshot.png"}],
+  "screenshots": [{"url":"jem-clock-screenshot.png"}],
   "storage": [
     {"name":"jemclock.app.js","url":"clock-jem.js"},
     {"name":"jemclock.img","url":"clock-jem-icon.js","evaluate":true}
