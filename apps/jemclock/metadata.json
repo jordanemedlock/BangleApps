@@ -1,8 +1,8 @@
 {
   "id": "jemclock",
   "name": "JEM Clock",
-  "version": "0.04",
-  "description": "My custom clock.  Just the tutorial at the moment.",
+  "version": "0.05",
+  "description": "Pride flag clocks!",
   "icon": "clock-jem.png",
   "type": "clock",
   "tags": "clock",

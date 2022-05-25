@@ -9,17 +9,24 @@ var flags = {
     "nb": {
         colors: ["#FCF434","#FFFFFF","#9C59D1","#000000"],
         offset: 30,
-        time: { y: 0, bg: "#FFFFFF" }
+        time: { y: 0, bg: "#FFFFFF" },
+        dow: { y: 27, bg: "#9C59D1" },
+        date: { y: 50, bg: "#9C59D1" }
     },
     "pride": {
         colors: ["#D12229","#F68A1E","#FDE01A","#007940","#24408E","#732982"],
         offset: 0,
-        time: { y: -10, bg: "#FDE01A" }
+        time: { y: -15, bg: "#FDE01A" },
+        dow: { y: 27, bg: "#007940" },
+        date: { y: 50, bg: "#24408E" }
     }
 };
-var flag = flags.nb;
+
+var flagType = 'nb';
+var flag = flags[flagType];
 
 var prev = new Date();
+var numSize = 3.8;
 
 function draw() {
     // work out how to display the current time
@@ -35,7 +42,7 @@ function draw() {
     g.setBgColor(flag.time.bg);
     g.setColor("#000");
     // draw the current time (4x size 7 segment)
-    g.setFont("7x11Numeric7Seg",4);
+    g.setFont("7x11Numeric7Seg",numSize);
     g.setFontAlign(1,1); // align right bottom
     g.drawString(time, X, Y + flag.time.y, true /*clear background*/);
     
@@ -45,11 +52,11 @@ function draw() {
         g.setFontAlign(-1,1);
         g.drawString(ap, X+5, Y-25 + flag.time.y, true);
     }
-    g.setFontAlign(1,1); // align right bottom
     
     // draw the seconds (2x size 7 segment)
-    g.setFont("7x11Numeric7Seg",2);
-    g.drawString(("0"+d.getSeconds()).substr(-2), X+30, Y + flag.time.y, true /*clear background*/);
+    g.setFont("7x11Numeric7Seg",numSize*0.6);
+    g.setFontAlign(-1,1); // align right bottom
+    g.drawString(("0"+d.getSeconds()).substr(-2), X+5, Y + flag.time.y, true /*clear background*/);
     
     if (prev.getDay() != d.getDay()) {
         drawDate();  
@@ -60,16 +67,18 @@ function draw() {
 function drawDate() {
     var d = new Date();
     // draw the date, in a normal font
-    g.setBgColor("#9C59D1");
+    g.setBgColor(flag.dow.bg);
     g.setColor("#000");
     g.setFont("6x8", 2);
     g.setFontAlign(0,1); // align center bottom
     // pad the date - this clears the background if the date were to change length
     var weekday = "    "+require("locale").dow(d)+"    ";
-    g.drawString(weekday, g.getWidth()/2, Y+27, true /*clear background*/);
+    g.drawString(weekday, g.getWidth()/2, Y+flag.dow.y, true /*clear background*/);
     
+    g.setBgColor(flag.date.bg);
+  
     var dateStr = "    "+require("locale").date(d)+"    ";
-    g.drawString(dateStr, g.getWidth()/2, Y+50, true /*clear background*/);
+    g.drawString(dateStr, g.getWidth()/2, Y+flag.date.y, true /*clear background*/);
 }
 
 function drawBackground() {
@@ -77,6 +86,8 @@ function drawBackground() {
     var offset = flag.offset;
     var bands = flag.colors.length;
     var bandHeight = (height - offset) / bands;
+    g.setColor('#000');
+    g.fillRect(0, 0, width, offset);
     for (var i=0; i < bands; i++) {
         var color = flag.colors[i];
         g.setColor(color);
@@ -87,6 +98,7 @@ function drawBackground() {
 // Clear the screen once, at startup
 g.clear();
 drawBackground();
+
 
 // draw immediately at first
 draw();
@@ -102,6 +114,15 @@ Bangle.on('lcdPower',on=>{
         draw(); // draw immediately
     }
 });
+
+setWatch(() => {
+  flagType = flagType == 'nb' ? 'pride' : 'nb';
+  flag = flags[flagType];
+  drawBackground();
+  draw();
+  drawDate();
+}, BTN1, {repeat: true});
+
 // Show launcher when middle button pressed
 Bangle.setUI("clock");
 // Load widgets
