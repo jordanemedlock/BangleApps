@@ -4,6 +4,7 @@
 g.clear();
 
 var alarms = require("sched").getAlarms();
+var history = require("Storage").readJSON("task-history.json", 1) || [];
 
 var titles = [ "Work", "Clean", "Relax", "Game", "Elden Ring", "Watch", "Tik Tok" ];
 
@@ -18,7 +19,7 @@ const iconTimerOff = "\0" + (g.theme.dark
 
 function showMenu() {
     var menu = {
-        "": { title: "Tasks Timer", y: 30 },
+        "": { title: "Tasks Timer" },
         "< Back": function () { load(); },
         "Edit >": function () { showEditMenu(); },
         "History >": function() { showHistory(); }
@@ -45,11 +46,30 @@ function showMenu() {
 
 function toggleTimer(idx) {
     alarms[idx].on = !alarms[idx].on;
+    history.push({
+        title: alarms[idx].title,
+        timer: alarms[idx].timer,
+        time: new Date()
+    })
+    require("Storage").writeJSON('task-history.json', history);
     saveAndReload();
 }
 
 function showHistory() {
 
+    var menu = {
+        "": { title: "Tasks History" },
+        "< Back": function () { showMenu(); },
+        // "Edit >": function () { showEditMenu(); },
+        // "History >": function() { showHistory(); }
+    };
+
+    history.forEach(h => {
+        var label = titles[h.title] + " for " + formatDuration(h.timer) + " @" + require("time_utils").time(h.time);
+        menu[label] = () => {}
+    })
+
+    E.showMenu(menu);
 }
 
 function formatDuration(time) {
@@ -75,7 +95,7 @@ function saveAndReload() {
 
 function showEditMenu() {
     var menu = {
-        "": { title: "Edit Tasks", y: 30 },
+        "": { title: "Edit Tasks" },
         "< Back": function() { showMenu(); },
         "New >": function () { showEditTask(null); }
     };
@@ -106,7 +126,7 @@ function showEditTask(idx) {
     }
 
     var menu = {
-        "": { title: "Edit Task", y: 30 },
+        "": { title: "Edit Task" },
         "< Save": function() {
                 saveAndReload();
                 showEditMenu(); 
@@ -147,8 +167,9 @@ function showEditTask(idx) {
     E.showMenu(menu);
 }
 
-showMenu();
-
 // Load widgets
 Bangle.loadWidgets();
 Bangle.drawWidgets();
+
+showMenu();
+
