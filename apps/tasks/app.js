@@ -18,7 +18,7 @@ const iconTimerOff = "\0" + (g.theme.dark
 
 function showMenu() {
     var menu = {
-        "": { title: "Tasks Timer" },
+        "": { title: "Tasks Timer", y: 30 },
         "< Back": function () { load(); },
         "Edit >": function () { showEditMenu(); },
         "History >": function() { showHistory(); }
@@ -45,6 +45,7 @@ function showMenu() {
 
 function toggleTimer(idx) {
     alarms[idx].on = !alarms[idx].on;
+    saveAndReload();
 }
 
 function showHistory() {
@@ -52,20 +53,12 @@ function showHistory() {
 }
 
 function formatDuration(time) {
-  return require("time_utils").formatDuration(time);
+    return require("time_utils").formatDuration(time);
 //   return time / 60 / 1000;
 }
 
 function newDefaultTask() {
-    var timer = {
-    timer: 5 * 60 * 1000, // 5 minutes
-    on: true,
-    rp: false,
-    as: false,
-    dow: 0b1111111,
-    last: 0,
-    vibrate: ".."
-  };
+    var timer = require("sched").newDefaultTimer();
 
     timer.on = false;
     timer.timer = 30 * 60 * 1000;
@@ -82,7 +75,7 @@ function saveAndReload() {
 
 function showEditMenu() {
     var menu = {
-        "": { title: "Edit Tasks" },
+        "": { title: "Edit Tasks", y: 30 },
         "< Back": function() { showMenu(); },
         "New >": function () { showEditTask(null); }
     };
@@ -113,7 +106,7 @@ function showEditTask(idx) {
     }
 
     var menu = {
-        "": { title: "Edit Task" },
+        "": { title: "Edit Task", y: 30 },
         "< Save": function() {
                 saveAndReload();
                 showEditMenu(); 
