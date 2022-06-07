@@ -91,6 +91,7 @@ function newDefaultTask() {
 function saveAndReload() {
     require("sched").setAlarms(alarms);
     require("sched").reload();
+    WIDGETS["widtasks"].draw(WIDGETS["widtasks"]);
 }
 
 function showEditMenu() {
