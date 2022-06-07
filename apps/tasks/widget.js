@@ -2,15 +2,16 @@
 (() => {
     var titles = [ "Work", "Clean", "Relax", "Game", "Elden Ring", "Watch", "Tik Tok" ];
 
-    const alarms = require("sched").getAlarms();
-    const tasks = alarms.filter(a => a.task && a.on);
-
     function draw() {
+        const alarms = require("sched").getAlarms();
+        const tasks = alarms.filter(a => a.task && a.on);
+
+        console.log("drawing widget")
         const task = tasks[0]
         if (task) {
             g.reset();
             var text = titles[task.title] + " " + require("time_utils").formatDuration(task.timer);
-
+            console.log("has task: " + text)
             g.setFont("6x8:1x2")
             g.setFontAlign(-1,-1);
             g.drawString(text, this.x, this.y, true);
