@@ -144,7 +144,7 @@ function showEditTask(idx) {
             value: task.timer,
             step: 5 * 60 * 1000, // 5 minutes
             min: 5 * 60 * 1000, // 5 minutes
-            max: 2 * 60 * 60 * 1000, // 2 hours
+            max: 120 * 60 * 1000, // 2 hours
             wrap: false,
             onchange: function(value) {task.timer = value;},
             format: function(value) {

@@ -1,14 +1,16 @@
 { "id": "tasks",
   "name": "Task timer",
   "shortName":"Task timer",
-  "version":"0.03",
+  "version":"0.04",
   "description": "Create tasks with specific timers",
   "icon": "app.png",
-  "tags": "",
-  "supports" : ["BANGLEJS"],  
+  "tags": "tool,alarm,widget",
+  "supports" : ["BANGLEJS"],
+  "dependencies": { "scheduler":"type" },  
   "readme": "README.md",
   "storage": [
     {"name":"tasks.app.js","url":"app.js"},
-    {"name":"tasks.img","url":"app-icon.js","evaluate":true}
+    {"name":"tasks.img","url":"app-icon.js","evaluate":true},
+    {"name":"tasks.wid.js","url":"widget.js"}
   ]
 }
