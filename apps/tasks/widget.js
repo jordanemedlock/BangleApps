@@ -3,16 +3,14 @@
     var titles = [ "Work", "Clean", "Relax", "Game", "Elden Ring", "Watch", "Tik Tok" ];
 
     function draw() {
-        const alarms = require("sched").getAlarms();
+        const alarms = [{task:true, on: true, timer: 30, title: 0}]; // require("sched").getAlarms();
         const tasks = alarms.filter(a => a.task && a.on);
 
-        console.log("drawing widget")
-        const task = tasks[0]
+        const task = tasks[0];
         if (task) {
             g.reset();
             var text = titles[task.title] + " " + require("time_utils").formatDuration(task.timer);
-            console.log("has task: " + text)
-            g.setFont("6x8:1x2")
+            g.setFont("6x8:1x2");
             g.setFontAlign(-1,-1);
             g.drawString(text, this.x, this.y, true);
             if (this.width === 0) {
@@ -23,12 +21,12 @@
     }
 
     setInterval(function() {
-        WIDGETS["widtasks"].draw(WIDGETS["widtasks"]);
+        WIDGETS["alarm"].draw(WIDGETS["alarm"]);
     }, 30*1000);
 
-    WIDGETS["widtasks"] = {
+    WIDGETS["alarm"] = {
         area: "tl",
         width: 0,
         draw: draw
-    }
-})
+    };
+})();
