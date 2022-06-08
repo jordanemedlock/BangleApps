@@ -64,6 +64,16 @@ function showHistory() {
     var menu = {
         "": { title: "Tasks History" },
         "< Back": function () { showMenu(); },
+        "Reset History >": function () {
+            E.showPrompt("Are you sure?", {title: "Delete History"}).then((confirm) => {
+                if (confirm) {
+                    history = [];
+                    require("Storage").writeJSON("task-history.json", history);
+                } else {
+                    showHistory();
+                }
+            });
+        }
         // "Edit >": function () { showEditMenu(); },
         // "History >": function() { showHistory(); }
     };
