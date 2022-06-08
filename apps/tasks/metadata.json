@@ -13,5 +13,6 @@
     {"name":"tasks.img","url":"app-icon.js","evaluate":true},
     {"name":"tasks.wid.js","url":"widget.js"}
   ],
+  "data": [{"name":"task-history.json"}],
   "sortorder": -9
 }
