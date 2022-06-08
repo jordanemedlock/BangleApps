@@ -34,7 +34,6 @@ function showMenu() {
             value: alarm.on,
             onchange: function() {
                 toggleTimer(i);
-                saveAndReload();
             },
             format: function(value) {return value ? iconTimerOn : iconTimerOff;}
         };
