@@ -10,7 +10,7 @@
         if (task) {
             g.reset();var time = new Date();
             var currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
-            var text = titles[task.title] + " " + require("time_utils").formatDuration(task.t - currentTime);
+            var text = titles[task.title] + " " + require("time_utils").formatDuration(task.t - currentTime, true);
             g.setFont("6x8:1x2");
             g.setFontAlign(-1,-1);
             g.drawString(text, this.x, this.y, true);
