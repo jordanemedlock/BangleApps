@@ -13,7 +13,7 @@
             var text = titles[task.title] + " " + require("time_utils").formatDuration(task.t - currentTime, true);
             g.setFont("6x8:1x2");
             g.setFontAlign(-1,-1);
-            g.drawString(text, this.x, this.y, true);
+            g.drawString(text, this.x, this.y+5, true);
             if (this.width === 0) {
                 this.width = 6*text.length+2;
                 Bangle.drawWidgets();
