@@ -73,7 +73,7 @@ exports.formatDuration = (value, compact) => {
   if (time.d > 0) duration += time.d + "d ";
   if (time.h > 0) duration += time.h + "h ";
   if (time.m > 0) duration += time.m + "m ";
-  if (time.s > 0) duration += time.s + "s"
+  if (time.s > 0 && !compact) duration += time.s + "s"
   duration = duration.trim()
   return compact ? duration.replace(" ", "") : duration;
 }
