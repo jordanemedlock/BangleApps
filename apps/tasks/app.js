@@ -45,6 +45,11 @@ function showMenu() {
 
 function toggleTimer(idx) {
     alarms[idx].on = !alarms[idx].on;
+    if (alarms[idx].on) {
+        var time = new Date();
+        var currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
+        alarms[idx].t = currentTime + alarms[idx].timer;
+    }
     history.push({
         title: alarms[idx].title,
         timer: alarms[idx].timer,
