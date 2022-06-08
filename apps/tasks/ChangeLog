@@ -9,3 +9,4 @@
 0.09: Drew time to alarm in widget
 0.10: Improved time set for alarm
 0.11: Use compressed time for widget
+0.12: Fixed time value in history

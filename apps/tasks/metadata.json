@@ -1,7 +1,7 @@
 { "id": "tasks",
   "name": "Task timer",
   "shortName":"Task timer",
-  "version":"0.11",
+  "version":"0.12",
   "description": "Create tasks with specific timers",
   "icon": "app.png",
   "tags": "tool,alarm,widget",

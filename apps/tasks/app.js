@@ -49,13 +49,13 @@ function toggleTimer(idx) {
         var time = new Date();
         var currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
         alarms[idx].t = currentTime + alarms[idx].timer;
+        history.push({
+            title: alarms[idx].title,
+            timer: alarms[idx].timer,
+            time: new Date().toISOString()
+        })
+        require("Storage").writeJSON('task-history.json', history);
     }
-    history.push({
-        title: alarms[idx].title,
-        timer: alarms[idx].timer,
-        time: new Date()
-    })
-    require("Storage").writeJSON('task-history.json', history);
     saveAndReload();
 }
 
@@ -69,7 +69,7 @@ function showHistory() {
     };
 
     history.forEach(h => {
-        var label = titles[h.title] + " for " + formatDuration(h.timer) + " @" + require("time_utils").time(h.time);
+        var label = titles[h.title] + " for " + formatDuration(h.timer) + " @" + formatTime(h.time);
         menu[label] = () => {}
     })
 
@@ -79,6 +79,10 @@ function showHistory() {
 function formatDuration(time) {
     return require("time_utils").formatDuration(time);
 //   return time / 60 / 1000;
+}
+
+function formatTime(time){
+    return require("locale").time(new Date(time), 1);
 }
 
 function newDefaultTask() {
