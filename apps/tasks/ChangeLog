@@ -11,3 +11,4 @@
 0.11: Use compressed time for widget
 0.12: Fixed time value in history
 0.13: Added reset history button
+0.14: Added individual delete to history

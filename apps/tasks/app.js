@@ -34,6 +34,9 @@ function showMenu() {
             value: alarm.on,
             onchange: function() {
                 toggleTimer(i);
+                if (alarm.on) {
+                    load();
+                }
             },
             format: function(value) {return value ? iconTimerOn : iconTimerOff;}
         };
@@ -78,9 +81,18 @@ function showHistory() {
         // "History >": function() { showHistory(); }
     };
 
-    history.forEach(h => {
+    history.forEach((h,i) => {
         var label = titles[h.title] + " for " + formatDuration(h.timer) + " @" + formatTime(h.time);
-        menu[label] = () => {}
+        menu[label] = () => {
+            E.showPrompt("Are you sure?", {title: "Delete History Item"}).then((confirm) => {
+                if (confirm) {
+                    history = splice(history, i);
+                    require("Storage").writeJSON("task-history.json", history);
+                } else {
+                    showHistory();
+                }
+            });
+        }
     })
 
     E.showMenu(menu);
