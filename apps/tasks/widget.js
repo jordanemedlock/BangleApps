@@ -3,7 +3,7 @@
     var titles = [ "Work", "Clean", "Relax", "Game", "Elden Ring", "Watch", "Tik Tok" ];
 
     function draw() {
-        const alarms = [{task:true, on: true, timer: 30, title: 0}]; // require("sched").getAlarms();
+        const alarms = require("sched").getAlarms();
         const tasks = alarms.filter(a => a.task && a.on);
 
         const task = tasks[0];
