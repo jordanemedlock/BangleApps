@@ -4,7 +4,7 @@
 g.clear();
 
 var alarms = require("sched").getAlarms();
-var history = require("Storage").readJSON("task-history.json", 1) || [];
+var history = require("Storage").readJSON("task-history-days.json", 1) || [];
 
 var titles = [ "Work", "Clean", "Relax", "Game", "Elden Ring", "Watch", "Tik Tok" ];
 
@@ -52,12 +52,16 @@ function toggleTimer(idx) {
         var time = new Date();
         var currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
         alarms[idx].t = currentTime + alarms[idx].timer;
-        history.push({
-            title: alarms[idx].title,
-            timer: alarms[idx].timer,
-            time: new Date().toISOString()
-        })
-        require("Storage").writeJSON('task-history.json', history);
+        var day = time.getFullYear() + "-" + time.getMonth() + "-" + time.getDay();
+        if (history[history.length-1].day !== day) {
+            history.push({
+                day:day,
+                tasks:[]
+            })
+        }
+        history[history.length-1].tasks = (history[history.length-1].tasks[alarms[idx].title] || 0) + 1;
+        history = history.slice(-30);
+        require("Storage").writeJSON('task-history-days.json', history);
     }
     saveAndReload();
 }
@@ -71,7 +75,7 @@ function showHistory() {
             E.showPrompt("Are you sure?", {title: "Delete History"}).then((confirm) => {
                 if (confirm) {
                     history = [];
-                    require("Storage").writeJSON("task-history.json", history);
+                    require("Storage").writeJSON("task-history-days.json", history);
                 } else {
                     showHistory();
                 }
@@ -82,12 +86,12 @@ function showHistory() {
     };
 
     history.forEach((h,i) => {
-        var label = titles[h.title] + " for " + formatDuration(h.timer) + " @" + formatTime(h.time);
+        var label = h.day + " " + h.tasks.map((c,i) => c + "x" + titles);
         menu[label] = () => {
             E.showPrompt("Are you sure?", {title: "Delete History Item"}).then((confirm) => {
                 if (confirm) {
                     history = splice(history, i);
-                    require("Storage").writeJSON("task-history.json", history);
+                    require("Storage").writeJSON("task-history-days.json", history);
                 } else {
                     showHistory();
                 }
