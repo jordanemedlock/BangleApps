@@ -53,7 +53,7 @@ function toggleTimer(idx) {
         var currentTime = (time.getHours()*3600000)+(time.getMinutes()*60000)+(time.getSeconds()*1000);
         alarms[idx].t = currentTime + alarms[idx].timer;
         var day = time.getFullYear() + "-" + time.getMonth() + "-" + time.getDay();
-        if (history[history.length-1] && history[history.length-1].day !== day) {
+        if (history.length < 1 || history[history.length-1].day !== day) {
             history.push({
                 day:day,
                 tasks:[]
