@@ -56,10 +56,11 @@ function toggleTimer(idx) {
         if (history.length < 1 || history[history.length-1].day !== day) {
             history.push({
                 day:day,
-                tasks:[]
+                tasks:{}
             })
         }
-        history[history.length-1].tasks = (history[history.length-1].tasks[alarms[idx].title] || 0) + 1;
+        var title = titles[alarms[idx].title];
+        history[history.length-1].tasks[title] = (history[history.length-1].tasks[title] || 0) + 1;
         history = history.slice(-30);
         require("Storage").writeJSON('task-history-days.json', history);
     }
@@ -86,7 +87,7 @@ function showHistory() {
     };
 
     history.forEach((h,i) => {
-        var label = h.day + " " + h.tasks.map((c,i) => c + "x" + titles);
+        var label = h.day + " " + Object.keys(h.tasks).map((k) => h.tasks[k] + "x" + k);
         menu[label] = () => {
             E.showPrompt("Are you sure?", {title: "Delete History Item"}).then((confirm) => {
                 if (confirm) {
