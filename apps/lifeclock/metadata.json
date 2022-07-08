@@ -1,0 +1,17 @@
+{
+  "id": "sierclock",
+  "name": "Sierpinski Triangle Clock",
+  "version": "0.01",
+  "description": "Self drawing sierpinski triangle clock!",
+  "icon": "clock-sier.png",
+  "type": "clock",
+  "tags": "clock",
+  "supports": ["BANGLEJS"],
+  "allow_emulator": true,
+  "screenshots": [{"url":"sier-clock-screenshot.png"}],
+  "storage": [
+    {"name":"sierclock.app.js","url":"clock-sier.js"},
+    {"name":"sierclock.img","url":"clock-sier-icon.js","evaluate":true}
+  ],
+  "sortorder": -10
+}
