@@ -6,6 +6,7 @@ g.clear();
 var displayText = "";
 
 requestAnimationFrame("textinput").input({text:displayText}).then(result => {
+    displayText = result;
     g.reset();
     g.setFont("6x8:1x2");
     g.setFontAlign(-1,-1);

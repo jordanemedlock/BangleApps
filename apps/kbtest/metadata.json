@@ -4,8 +4,9 @@
   "version":"0.01",
   "description": "A detailed description of my great app",
   "icon": "app.png",
-  "tags": "",
+  "tags": "keyboard",
   "supports" : ["BANGLEJS"],  
+  "dependencies": { "textinput":"type" },  
   "readme": "README.md",
   "storage": [
     {"name":"kbtest.app.js","url":"app.js"},
