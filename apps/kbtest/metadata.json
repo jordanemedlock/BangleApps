@@ -1,0 +1,14 @@
+{ "id": "kbtest",
+  "name": "My app's human readable name",
+  "shortName":"Short Name",
+  "version":"0.01",
+  "description": "A detailed description of my great app",
+  "icon": "app.png",
+  "tags": "",
+  "supports" : ["BANGLEJS"],  
+  "readme": "README.md",
+  "storage": [
+    {"name":"kbtest.app.js","url":"app.js"},
+    {"name":"kbtest.img","url":"app-icon.js","evaluate":true}
+  ]
+}
