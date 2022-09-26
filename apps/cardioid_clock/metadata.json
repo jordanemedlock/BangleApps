@@ -1,0 +1,39 @@
+{
+    "id": "cardioid_clock",
+    "name": "Cardioid Clock",
+    "version": "0.01",
+    "description": "Self drawing cardioid clock!",
+    "icon": "clock-cardioid.png",
+    "type": "clock",
+    "tags": "clock",
+    "supports": [
+        "BANGLEJS"
+    ],
+    "allow_emulator": true,
+    "screenshots": [
+        {
+            "url": "cardioid-clock-screenshot-1.png"
+        },
+        {
+            "url": "cardioid-clock-screenshot-2.png"
+        },
+        {
+            "url": "cardioid-clock-screenshot-3.png"
+        },
+        {
+            "url": "cardioid-clock-screenshot-4.png"
+        }
+    ],
+    "storage": [
+        {
+            "name": "cardioidclock.app.js",
+            "url": "clock-cardioid.js"
+        },
+        {
+            "name": "cardioidclock.img",
+            "url": "clock-cardioid-icon.js",
+            "evaluate": true
+        }
+    ],
+    "sortorder": -10
+}
