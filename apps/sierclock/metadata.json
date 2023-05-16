@@ -6,7 +6,7 @@
   "icon": "clock-sier.png",
   "type": "clock",
   "tags": "clock",
-  "supports": ["BANGLEJS"],
+  "supports": ["BANGLEJS","BANGLEJS2"],
   "allow_emulator": true,
   "screenshots": [{"url":"sier-clock-screenshot.png"}],
   "storage": [
