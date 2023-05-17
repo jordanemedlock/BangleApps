@@ -325,6 +325,8 @@ function setWeather() {
     }
   }
   draw(a);
+  Bangle.loadWidgets();
+  Bangle.drawWidgets();
 }
 
 function readWeather() {
@@ -370,6 +372,8 @@ function queueDraw() {
 queueDraw();
 readWeather();
 setWeather();
+Bangle.loadWidgets();
+Bangle.drawWidgets();
 Bangle.setUI("clock");
 
 if (data.showWidgets) {
