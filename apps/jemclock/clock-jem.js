@@ -2,13 +2,13 @@
 require("Font7x11Numeric7Seg").add(Graphics);
 var is12Hour = true; // (require("Storage").readJSON("setting.json",1)||{})["12hour"];
 // position on screen
-const X = 160, Y = 132;
 const width = g.getWidth(), height = g.getHeight();
+const X = width / 1.5, Y = height / 1.8;
 
 var flags = {
     "nb": {
         colors: ["#FCF434","#FFFFFF","#9C59D1","#000000"],
-        offset: 30,
+        offset: height / 8,
         time: { y: 0, bg: "#FFFFFF" },
         dow: { y: 27, bg: "#9C59D1" },
         date: { y: 50, bg: "#9C59D1" }
@@ -72,13 +72,13 @@ function drawDate() {
     g.setFont("6x8", 2);
     g.setFontAlign(0,1); // align center bottom
     // pad the date - this clears the background if the date were to change length
-    var weekday = "    "+require("locale").dow(d)+"    ";
-    g.drawString(weekday, g.getWidth()/2, Y+flag.dow.y, true /*clear background*/);
+    var weekday = "    "+require("locale").dow(d, 1)+"    ";
+    // g.drawString(weekday, g.getWidth()/2, Y+flag.dow.y, true /*clear background*/);
     
     g.setBgColor(flag.date.bg);
   
-    var dateStr = "    "+require("locale").date(d)+"    ";
-    g.drawString(dateStr, g.getWidth()/2, Y+flag.date.y, true /*clear background*/);
+    var dateStr = require("locale").dow(d, 1) + " "+require("locale").month(d, 1) + " " + d.getDate();
+    g.drawString(dateStr, g.getWidth()/2, Y+flag.dow.y, true /*clear background*/);
 }
 
 function drawBackground() {
