@@ -186,14 +186,14 @@ function showBLEMenu() {
         updateSettings();
       }
     },
-    /*LANG*/'Passkey BETA': {
+    /*LANG*/'Passkey': {
       value: settings.passkey?settings.passkey:/*LANG*/"none",
       onchange: () => setTimeout(showPasskeyMenu) // graphical_menu redraws after the call
     },
     /*LANG*/'Whitelist': {
       value:
         (
-          settings.whitelist_disabled ? /*LANG*/"off" : /*LANG*/"on"
+          (settings.whitelist_disabled || !settings.whitelist) ? /*LANG*/"off" : /*LANG*/"on"
         ) + (
           settings.whitelist
           ? " (" + settings.whitelist.length + ")"
@@ -383,6 +383,12 @@ function showWhitelistMenu() {
     NRF.on('connect', function(addr) {
       if (!settings.whitelist) settings.whitelist=[];
       delete settings.whitelist_disabled;
+      if (NRF.resolveAddress !== undefined) {
+        let resolvedAddr = NRF.resolveAddress(addr);
+        if (resolvedAddr !== undefined) {
+          addr = resolvedAddr + " (resolved)";
+        }
+      }
       settings.whitelist.push(addr);
       updateSettings();
       NRF.removeAllListeners('connect');
@@ -658,6 +664,7 @@ function showUtilMenu() {
 function makeConnectable() {
   try { NRF.wake(); } catch (e) { }
   Bluetooth.setConsole(1);
+  NRF.ignoreWhitelist = 1;
   var name = "Bangle.js " + NRF.getAddress().substr(-5).replace(":", "");
   E.showPrompt(name + /*LANG*/"\nStay Connectable?", { title: /*LANG*/"Connectable" }).then(r => {
     if (settings.ble != r) {
@@ -665,6 +672,7 @@ function makeConnectable() {
       updateSettings();
     }
     if (!r) try { NRF.sleep(); } catch (e) { }
+    delete NRF.ignoreWhitelist;
     showMainMenu();
   });
 }
@@ -815,7 +823,7 @@ function showAppSettings(app) {
   try {
     appSettings = eval(appSettings);
   } catch (e) {
-    console.log(`${app.name} settings error:`, e)
+    console.log(`${app.name} settings error:`, e);
     return showError(/*LANG*/'Error in settings');
   }
   if (typeof appSettings !== "function") {
@@ -825,7 +833,7 @@ function showAppSettings(app) {
     // pass showAppSettingsMenu as "back" argument
     appSettings(()=>showAppSettingsMenu());
   } catch (e) {
-    console.log(`${app.name} settings error:`, e)
+    console.log(`${app.name} settings error:`, e);
     return showError(/*LANG*/'Error in settings');
   }
 }

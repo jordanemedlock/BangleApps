@@ -26,9 +26,9 @@
         trimCache(cache);
         require("Storage").writeJSON("popcon.cache.json", cache);
         if (orderChanged) {
-            var info = oldRead("popcon.info", true);
+            var info = oldRead("popconlaunch.info", true) || { cacheBuster: true };
             info.cacheBuster = !info.cacheBuster;
-            require("Storage").writeJSON("popcon.info", info);
+            require("Storage").writeJSON("popconlaunch.info", info);
         }
     };
     var sortCache = function () {
@@ -65,7 +65,7 @@
     require("Storage").readJSON = (function (fname, skipExceptions) {
         var _a;
         var j = oldRead(fname, skipExceptions);
-        if (/\.info$/.test(fname)) {
+        if (j && /\.info$/.test(fname)) {
             var cache_1 = ensureCache();
             var so = void 0;
             if (j.src && (so = (_a = cache_1[j.src]) === null || _a === void 0 ? void 0 : _a.sortorder) != null)
