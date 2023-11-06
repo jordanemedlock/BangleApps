@@ -1,0 +1,15 @@
+{ "id": "quicktimer",
+  "name": "Quick Timer",
+  "shortName":"Quick Timer",
+  "version":"0.01",
+  "description": "A timer with 9 time options to quickly select a timer",
+  "icon": "app.png",
+  "tags": "",
+  "supports" : ["BANGLEJS2"],  
+  "readme": "README.md",
+  "dependencies": {"scheduler": "type"},
+  "storage": [
+    {"name":"quicktimer.app.js","url":"app.js"},
+    {"name":"quicktimer.img","url":"app-icon.js","evaluate":true}
+  ]
+}
