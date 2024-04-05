@@ -22,12 +22,27 @@ GB({t:"nav",src:"maps",title:"Navigation",instr:"Main St / I-29 ALT / Centerpoin
 require("messages").pushMessage({"t":"add","id":"call","src":"Phone","title":"Bob","body":"12421312",positive:true,negative:true})
 */
 var Layout = require("Layout");
+var layout; // global var containing the layout for the currently displayed message
 var settings = require('Storage').readJSON("messages.settings.json", true) || {};
 var fontSmall = "6x8";
 var fontMedium = g.getFonts().includes("6x15")?"6x15":"6x8:2";
 var fontBig = g.getFonts().includes("12x20")?"12x20":"6x8:2";
 var fontLarge = g.getFonts().includes("6x15")?"6x15:2":"6x8:4";
 var fontVLarge = g.getFonts().includes("6x15")?"12x20:2":"6x8:5";
+
+// If a font library is installed, just switch to using that for everything in messages
+if (Graphics.prototype.setFontIntl) {
+  fontSmall = "Intl";
+  fontMedium = "Intl";
+  fontBig = "Intl";
+  /* 2v21 and before have a bug where the scale factor for PBF fonts wasn't
+  taken into account in metrics, so we can't have big fonts on those firmwares.
+  Having 'PBF' listed as a font was a bug fixed at the same time so we check for that. */
+  let noScale = g.getFonts().includes("PBF");
+  fontLarge = noScale?"Intl":"Intl:2";
+  fontVLarge = noScale?"Intl":"Intl:3";
+}
+
 var active; // active screen (undefined/"list"/"music"/"map"/"message"/"scroller"/"settings")
 var openMusic = false; // go back to music screen after we handle something else?
 // hack for 2v10 firmware's lack of ':size' font handling
@@ -218,6 +233,7 @@ function showMusicMessage(msg) {
 }
 
 function showMessageScroller(msg) {
+  cancelReloadTimeout();
   active = "scroller";
   var bodyFont = fontBig;
   g.setFont(bodyFont);
@@ -289,7 +305,8 @@ function showMessageSettings(msg) {
 }
 
 function showMessage(msgid) {
-  var msg = MESSAGES.find(m=>m.id==msgid);
+  let idx = MESSAGES.findIndex(m=>m.id==msgid);
+  var msg = MESSAGES[idx];
   if (updateLabelsInterval) {
     clearInterval(updateLabelsInterval);
     updateLabelsInterval=undefined;
@@ -389,9 +406,11 @@ function showMessage(msgid) {
     {type:"h",fillx:1, c: footer}
   ]},{back:goBack});
 
-  Bangle.swipeHandler = lr => {
+  Bangle.swipeHandler = (lr,ud) => {
     if (lr>0 && posHandler) posHandler();
     if (lr<0 && negHandler) negHandler();
+    if (ud>0 && idx<MESSAGES.length-1) showMessage(MESSAGES[idx+1].id);
+    if (ud<0 && idx>0) showMessage(MESSAGES[idx-1].id);
   };
   Bangle.on("swipe", Bangle.swipeHandler);
   g.reset().clearRect(Bangle.appRect);
@@ -446,7 +465,7 @@ function checkMessages(options) {
   if (options.clockIfAllRead && newMessages.length==0)
     return load();
   active = "list";
-  // Otherwise show a menu
+  // Otherwise show a list of messages
   E.showScroller({
     h : 48,
     c : Math.max(MESSAGES.length,3), // workaround for 2v10.219 firmware (min 3 not needed for 2v11)
@@ -469,17 +488,21 @@ function checkMessages(options) {
          .setColor(fg); // only color the icon
         x += 50;
       }
-      var m = msg.title+"\n"+msg.body, longBody=false;
       if (title) g.setFontAlign(-1,-1).setFont(fontBig).drawString(title, x,r.y+2);
+      var longBody = false;
       if (body) {
-        g.setFontAlign(-1,-1).setFont("6x8");
+        g.setFontAlign(-1,-1).setFont(fontSmall);
+        // if the body includes an image, it probably won't be small enough to allow>1 line
+        let maxLines = Math.floor(34/g.getFontHeight()), pady = 0;
+        if (body.includes("\0")) { maxLines=1; pady=4; }
         var l = g.wrapString(body, r.w-(x+14));
-        if (l.length>3) {
-          l = l.slice(0,3);
+        if (l.length>maxLines) {
+          l = l.slice(0,maxLines);
           l[l.length-1]+="...";
         }
         longBody = l.length>2;
-        g.drawString(l.join("\n"), x+10,r.y+20);
+        // draw the body
+        g.drawString(l.join("\n"), x+10,r.y+20+pady);
       }
       if (!longBody && msg.src) g.setFontAlign(1,1).setFont("6x8").drawString(msg.src, r.x+r.w-2, r.y+r.h-2);
       g.setColor("#888").fillRect(r.x,r.y+r.h-1,r.x+r.w-1,r.y+r.h-1); // dividing line between items
