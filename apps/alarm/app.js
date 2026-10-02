@@ -4,7 +4,6 @@ Bangle.drawWidgets();
 const settings = Object.assign({
   showConfirm : true,
   showAutoSnooze : true,
-  showHidden : true
 }, require('Storage').readJSON('alarm.json',1)||{});
 // 0 = Sunday (default), 1 = Monday
 const firstDayOfWeek = (require("Storage").readJSON("setting.json", true) || {}).firstDayOfWeek || 0;
@@ -50,11 +49,15 @@ function handleFirstDayOfWeek(dow) {
 alarms.filter(e => e.timer === undefined).forEach(a => a.dow = handleFirstDayOfWeek(a.dow));
 
 function getLabel(e) {
-  const dateStr = e.date && require("locale").date(new Date(e.date), 1);
+  const dateStr = getDateText(e.date);
   return (e.timer
       ? require("time_utils").formatDuration(e.timer)
       : (dateStr ? `${dateStr}${e.rp?"*":""} ${require("time_utils").formatTime(e.t)}` : require("time_utils").formatTime(e.t) + (e.rp ? ` ${decodeRepeat(e)}` : ""))
       ) + (e.msg ? ` ${e.msg}` : "");
+}
+
+function getDateText(d) {
+  return d && (settings.menuDateFormat === "mmdd" ? d.substring(d.startsWith(new Date().getFullYear()) ? 5 : 0) : require("locale").date(new Date(d), 1));
 }
 
 function trimLabel(label, maxLength) {
@@ -75,30 +78,48 @@ function formatAlarmProperty(msg) {
   }
 }
 
-function showMainMenu(scroll, group) {
+function showMainMenu(scroll, group, scrollback) {
   const menu = {
     "": { "title": group || /*LANG*/"Alarms & Timers", scroll: scroll },
-    "< Back": () => group ? showMainMenu() : load(),
+    "< Back": () => group ? showMainMenu(scrollback) : load(),
     /*LANG*/"New...": () => showNewMenu(group)
   };
   const getGroups = settings.showGroup && !group;
   const groups = getGroups ? {} : undefined;
-  var showAlarm;
+  const getIcon = (e)=>{return e.on ? (e.timer ? iconTimerOn : iconAlarmOn) : (e.timer ? iconTimerOff : iconAlarmOff);};
 
-  alarms.forEach((e, index) => {
-    showAlarm = !settings.showGroup || (group ? e.group === group : !e.group);
-    if(showAlarm) {
-      menu[trimLabel(getLabel(e),40)] = {
-        value: e.on ? (e.timer ? iconTimerOn : iconAlarmOn) : (e.timer ? iconTimerOff : iconAlarmOff),
-        onchange: () => setTimeout(e.timer ? showEditTimerMenu : showEditAlarmMenu, 10, e, index, undefined, scroller.scroll, group)
+  alarms.forEach((e, index) => {if (!e.hidden || settings.showHidden) {
+    const E_GROUP = e.group||(e.hidden?"Hidden":undefined);
+    const showAlarmInMainMenu = !(E_GROUP && settings.showGroup) && !group;
+    const showAlarmInGroupMenu = settings.showGroup && (group ? E_GROUP === group : false);
+    if (showAlarmInMainMenu && showAlarmInGroupMenu) throw new Error("Alarm should not belong to both main and group menu."); // To catch if future changes mess it up.
+    if(showAlarmInMainMenu || showAlarmInGroupMenu) {
+      const LABEL = trimLabel(getLabel(e),40);
+      let i = 0;
+      const addSuffix = (word, i) => i ? word + " ("+i+")" : word;
+      while (menu[addSuffix(LABEL, i)]) {i++;}
+      menu[addSuffix(LABEL, i)] = {
+        value: e.on,
+        onchange: (v, touch) => {
+          if (touch && (2==touch.type || 145<touch.x)) { // Long touch or touched icon.
+            e.on = v;
+            if (e.on) prepareForSave(e, index);
+            saveAndReload();
+          } else {
+            setTimeout(e.timer ? showEditTimerMenu : showEditAlarmMenu, 10, e, index, undefined, scroller?scroller.scroll:undefined, group);
+          }
+        },
+        format: v=>getIcon(e)
       };
-    } else if (getGroups) {
-      groups[e.group] = undefined;
     }
+    if (getGroups && E_GROUP) {
+      groups[E_GROUP] = undefined;
+    }
+  }
   });
 
   if (!group) {
-    Object.keys(groups).sort().forEach(g => menu[g] = () => showMainMenu(null, g));
+    Object.keys(groups).sort().forEach(g => menu[g] = () => showMainMenu(null, g, scroller?scroller.scroll:undefined));
     menu[/*LANG*/"Advanced"] = () => showAdvancedMenu();
   }
 
@@ -108,7 +129,7 @@ function showMainMenu(scroll, group) {
 function showNewMenu(group) {
   const newMenu = {
     "": { "title": /*LANG*/"New..." },
-    "< Back": () => showMainMenu(group),
+    "< Back": () => showMainMenu(null, group),
     /*LANG*/"Alarm": () => showEditAlarmMenu(undefined, undefined, false, null, group),
     /*LANG*/"Timer": () => showEditTimerMenu(undefined, undefined),
     /*LANG*/"Event": () => showEditAlarmMenu(undefined, undefined, true, null, group)
@@ -138,6 +159,8 @@ function showEditAlarmMenu(selectedAlarm, alarmIndex, withDate, scroll, group) {
   var title = date ? (isNew ? /*LANG*/"New Event" : /*LANG*/"Edit Event") : (isNew ? /*LANG*/"New Alarm" : /*LANG*/"Edit Alarm");
   var keyboard = "textinput";
   try {keyboard = require(keyboard);} catch(e) {keyboard = null;}
+  var datetimeinput;
+  try {datetimeinput = require("datetimeinput");} catch(e) {datetimeinput = null;}
 
   const menu = {
     "": { "title": title },
@@ -145,41 +168,66 @@ function showEditAlarmMenu(selectedAlarm, alarmIndex, withDate, scroll, group) {
       prepareAlarmForSave(alarm, alarmIndex, time, date);
       saveAndReload();
       showMainMenu(scroll, group);
-    },
-    /*LANG*/"Hour": {
-      value: time.h,
-      format: v => ("0" + v).substr(-2),
-      min: 0,
-      max: 23,
-      wrap: true,
-      onchange: v => time.h = v
-    },
-    /*LANG*/"Minute": {
-      value: time.m,
-      format: v => ("0" + v).substr(-2),
-      min: 0,
-      max: 59,
-      wrap: true,
-      onchange: v => time.m = v
-    },
-    /*LANG*/"Day": {
-      value: date ? date.getDate() : null,
-      min: 1,
-      max: 31,
-      wrap: true,
-      onchange: v => date.setDate(v)
-    },
-    /*LANG*/"Month": {
-      value: date ? date.getMonth() + 1 : null,
-      format: v => require("date_utils").month(v),
-      onchange: v => date.setMonth((v+11)%12)
-    },
-    /*LANG*/"Year": {
-      value: date ? date.getFullYear() : null,
-      min: new Date().getFullYear(),
-      max: 2100,
-      onchange: v => date.setFullYear(v)
-    },
+    }
+  };
+
+  if (alarm.date && datetimeinput) {
+    menu[`${getDateText(date.toLocalISOString().slice(0,10))} ${require("time_utils").formatTime(time)}`] = {
+      value: date,
+      format: v => "",
+      onchange: v => {
+        setTimeout(() => {
+          var datetime = new Date(v.getTime());
+          datetime.setHours(time.h, time.m);
+          datetimeinput.input({datetime}).then(result => {
+            time.h = result.getHours();
+            time.m = result.getMinutes();
+            prepareAlarmForSave(alarm, alarmIndex, time, result, true);
+            setTimeout(showEditAlarmMenu, 10, alarm, alarmIndex, withDate, scroll, group);
+          });
+        }, 100);
+      }
+    };
+  } else {
+    Object.assign(menu, {
+      /*LANG*/"Hour": {
+        value: time.h,
+        format: v => ("0" + v).substr(-2),
+        min: 0,
+        max: 23,
+        wrap: true,
+        onchange: v => time.h = v
+      },
+      /*LANG*/"Minute": {
+        value: time.m,
+        format: v => ("0" + v).substr(-2),
+        min: 0,
+        max: 59,
+        wrap: true,
+        onchange: v => time.m = v
+      },
+      /*LANG*/"Day": {
+        value: date ? date.getDate() : null,
+        min: 1,
+        max: 31,
+        wrap: true,
+        onchange: v => date.setDate(v)
+      },
+      /*LANG*/"Month": {
+        value: date ? date.getMonth() + 1 : null,
+        format: v => require("date_utils").month(v),
+        onchange: v => date.setMonth((v+11)%12)
+      },
+      /*LANG*/"Year": {
+        value: date ? date.getFullYear() : null,
+        min: new Date().getFullYear(),
+        max: 2100,
+        onchange: v => date.setFullYear(v)
+      }
+    });
+  }
+
+  Object.assign(menu, {
     /*LANG*/"Message": {
       value: alarm.msg,
       format: formatAlarmProperty,
@@ -241,7 +289,7 @@ function showEditAlarmMenu(selectedAlarm, alarmIndex, withDate, scroll, group) {
       saveAndReload();
       showMainMenu(scroll, group);
     }
-  };
+  });
 
   if (!keyboard) delete menu[/*LANG*/"Message"];
   if (!keyboard || !settings.showGroup) delete menu[/*LANG*/"Group"];
@@ -252,7 +300,6 @@ function showEditAlarmMenu(selectedAlarm, alarmIndex, withDate, scroll, group) {
     delete menu[/*LANG*/"Day"];
     delete menu[/*LANG*/"Month"];
     delete menu[/*LANG*/"Year"];
-    delete menu[/*LANG*/"Delete After Expiration"];
   }
 
   if (!isNew) {
@@ -284,6 +331,14 @@ function prepareAlarmForSave(alarm, alarmIndex, time, date, temp) {
     } else {
       alarms[alarmIndex] = alarm;
     }
+  }
+}
+
+function prepareForSave(alarm, alarmIndex) {
+  if (alarm.timer) {
+    prepareTimerForSave(alarm, alarmIndex, require("time_utils").decodeTime(alarm.timer));
+  } else {
+    prepareAlarmForSave(alarm, alarmIndex, require("time_utils").decodeTime(alarm.t));
   }
 }
 
@@ -515,6 +570,7 @@ function showAdvancedMenu() {
   E.showMenu({
     "": { "title": /*LANG*/"Advanced" },
     "< Back": () => showMainMenu(),
+    /*LANG*/"App Settings": () => eval(require("Storage").read("alarm.settings.js"))(() => showAdvancedMenu()),
     /*LANG*/"Scheduler Settings": () => eval(require("Storage").read("sched.settings.js"))(() => showAdvancedMenu()),
     /*LANG*/"Enable All": () => enableAll(true),
     /*LANG*/"Disable All": () => enableAll(false),
@@ -533,13 +589,7 @@ function enableAll(on) {
       if (confirm) {
         alarms.forEach((alarm, i) => {
           alarm.on = on;
-          if (on) {
-            if (alarm.timer) {
-              prepareTimerForSave(alarm, i, require("time_utils").decodeTime(alarm.timer));
-            } else {
-              prepareAlarmForSave(alarm, i, require("time_utils").decodeTime(alarm.t));
-            }
-          }
+          if (on) prepareForSave(alarm, i);
         });
         saveAndReload();
         showMainMenu();

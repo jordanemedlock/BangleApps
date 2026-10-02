@@ -12,27 +12,34 @@
     var width = function () { return state > 0 ? 15 : 0; };
     var update = function (newState) {
         state = newState;
-        WIDGETS["bluetooth"].width = width();
+        var newWidth = width();
+        var w = WIDGETS["bluetooth"];
+        if (newWidth === 0 && w.width) {
+            g
+                .reset("widget")
+                .clearRect({ x: w.x, y: w.y, w: w.width, h: 24 });
+        }
+        w.width = newWidth;
         setTimeout(Bangle.drawWidgets, 50);
     };
     var colours = (_a = {},
         _a[1] = {
-            false: "#fff",
+            false: "#000",
             true: "#fff",
         },
         _a[2] = {
-            false: "#0ff",
-            true: "#00f",
+            false: "#00f",
+            true: "#0ff",
         },
         _a);
     WIDGETS["bluetooth"] = {
         area: "tl",
         sortorder: -1,
         draw: function () {
-            if (state == 0)
+            if (state === 0)
                 return;
             g.reset();
-            g.setColor(colours[state]["".concat(g.theme.dark)]);
+            g.setColor(colours[state][g.theme.dark]);
             g.drawImage(atob("CxQBBgDgFgJgR4jZMawfAcA4D4NYybEYIwTAsBwDAA=="), this.x + 2, this.y + 2);
         },
         width: width(),
